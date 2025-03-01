@@ -1,7 +1,7 @@
 (function() {
     // Default configuration
     const defaultConfig = {
-        webhookUrl: 'https://agneai-n8n.onrender.com/webhook/f406671e-c954-4691-b39a-66c90aa2f103/chat',
+        webhookUrl: '',
         mode: 'window', // 'window' or 'fullscreen'
         showWelcomeScreen: true,
         defaultLanguage: 'en',
