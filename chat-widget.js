@@ -397,7 +397,7 @@
 
     async function startNewConversation() {
         currentSessionId = generateUUID();
-        const data = {  // Changed from array to object
+        const data = {
             action: "loadPreviousSession",
             sessionId: currentSessionId,
             route: config.webhook.route,
@@ -411,11 +411,16 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'  // Added Accept header
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
-                body: JSON.stringify(data)
+                mode: 'cors'
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const responseData = await response.json();
             chatContainer.querySelector('.brand-header').style.display = 'none';
             chatContainer.querySelector('.new-conversation').style.display = 'none';
@@ -453,20 +458,40 @@
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
-                body: JSON.stringify(messageData)
+                mode: 'cors',
+                body: JSON.stringify({
+                    action: "sendMessage",
+                    sessionId: currentSessionId,
+                    route: config.webhook.route,
+                    chatInput: message,
+                    metadata: {
+                        userId: ""
+                    }
+                })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const data = await response.json();
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(data) ? data[0].output : data.output;
+            botMessageDiv.textContent = data.output || data.message || 'I received your message';
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
             console.error('Error:', error);
+            const botMessageDiv = document.createElement('div');
+            botMessageDiv.className = 'chat-message bot';
+            botMessageDiv.textContent = 'Sorry, there was an error processing your message. Please try again.';
+            messagesContainer.appendChild(botMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
     }
 
