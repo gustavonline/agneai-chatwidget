@@ -18,13 +18,15 @@
             display: none;
             width: 380px;
             height: 600px;
-            max-height: 80vh; // Add max-height
+            max-height: 80vh;
             background: var(--chat--color-background);
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(133, 79, 255, 0.15);
             border: 1px solid rgba(133, 79, 255, 0.2);
             overflow: hidden;
             font-family: inherit;
+            display: flex;
+            flex-direction: column;
         }
 
         .n8n-chat-widget .chat-container.position-left {
@@ -44,6 +46,8 @@
             gap: 12px;
             border-bottom: 1px solid rgba(133, 79, 255, 0.1);
             position: relative;
+            background: var(--chat--color-background);
+            z-index: 2;
         }
 
         .n8n-chat-widget .close-button {
@@ -150,6 +154,8 @@
             background: var(--chat--color-background);
             display: flex;
             flex-direction: column;
+            height: calc(100% - 140px); /* Adjust for header and input heights */
+            min-height: 0;
         }
 
         .n8n-chat-widget .chat-message {
@@ -395,11 +401,6 @@
 
     const chatInterfaceHTML = `
         <div class="chat-interface">
-            <div class="brand-header">
-                <img src="${config.branding.logo}" alt="${config.branding.name}">
-                <span>${config.branding.name}</span>
-                <button class="close-button">×</button>
-            </div>
             <div class="chat-messages"></div>
             <div class="chat-input">
                 <textarea placeholder="Type your message here..." rows="1"></textarea>
