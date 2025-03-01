@@ -208,5 +208,11 @@
     }
 
     // Make ChatWidget available globally
+    // Change the last part from:
     window.ChatWidget = ChatWidget;
+    
+    // To this:
+    if (typeof window !== 'undefined') {
+        window.ChatWidget = ChatWidget;
+    }
 })();
