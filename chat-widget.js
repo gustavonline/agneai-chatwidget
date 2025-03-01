@@ -389,8 +389,8 @@
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Powered by who?',
-                link: 'https://agneai.com'
+                text: 'Powered by n8n',
+                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
             }
         },
         style: {
@@ -524,7 +524,9 @@
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json', // Added Accept header for better response handling
+                    'Origin': window.location.origin // Added for CORS if needed
                 },
                 body: JSON.stringify(data)
             });
@@ -542,16 +544,16 @@
 
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(responseData) ? responseData[0].output : responseData.output;
+            botMessageDiv.textContent = Array.isArray(responseData) ? responseData[0].output : responseData.output || 'I\'m ready to help! What would you like to know?';
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
             removeTypingIndicator(loadingDiv);
-            console.error('Error:', error);
-            
+            console.error('Error in startNewConversation:', error.message);
+
             const errorMessageDiv = document.createElement('div');
             errorMessageDiv.className = 'chat-message bot';
-            errorMessageDiv.textContent = 'I\'m ready to help! What would you like to know about our services?';
+            errorMessageDiv.textContent = 'Sorry, there was an issue connecting to the server. Please try again later or contact support.';
             messagesContainer.appendChild(errorMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
@@ -578,7 +580,9 @@
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
                 body: JSON.stringify(messageData)
             });
@@ -593,12 +597,12 @@
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(data) ? data[0].output : data.output;
+            botMessageDiv.textContent = Array.isArray(data) ? data[0].output : data.output || 'I received your message';
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
             removeTypingIndicator(loadingDiv);
-            console.error('Error:', error);
+            console.error('Error in sendMessage:', error.message);
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
