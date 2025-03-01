@@ -406,6 +406,17 @@
             }
         };
 
+        // Show chat interface immediately
+        chatContainer.querySelector('.new-conversation').style.display = 'none';
+        chatInterface.classList.add('active');
+
+        // Add immediate welcome message
+        const welcomeMessageDiv = document.createElement('div');
+        welcomeMessageDiv.className = 'chat-message bot';
+        welcomeMessageDiv.textContent = 'Hello! 👋 Welcome to Agne AI. How can I assist you today?';
+        messagesContainer.appendChild(welcomeMessageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
         try {
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
@@ -414,7 +425,8 @@
                     'Accept': 'application/json',
                     'Origin': window.location.origin
                 },
-                mode: 'cors'
+                mode: 'cors',
+                body: JSON.stringify(data)  // Add the request body
             });
 
             if (!response.ok) {
@@ -422,18 +434,15 @@
             }
             
             const responseData = await response.json();
-            chatContainer.querySelector('.brand-header').style.display = 'none';
-            chatContainer.querySelector('.new-conversation').style.display = 'none';
-            chatInterface.classList.add('active');
-
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = responseData.output || responseData.message || 'Hello! How can I help you?';
-            messagesContainer.appendChild(botMessageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            if (responseData.output || responseData.message) {
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'chat-message bot';
+                botMessageDiv.textContent = responseData.output || responseData.message;
+                messagesContainer.appendChild(botMessageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
         } catch (error) {
             console.error('Error:', error);
-            chatInterface.classList.add('active');
         }
     }
 
