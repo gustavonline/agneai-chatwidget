@@ -17,6 +17,7 @@
             z-index: 1000;
             display: none;
             width: 380px;
+            display: none; // Remove duplicate display property
             height: 600px;
             max-height: 80vh;
             background: var(--chat--color-background);
@@ -154,8 +155,8 @@
             background: var(--chat--color-background);
             display: flex;
             flex-direction: column;
-            height: calc(100% - 140px); /* Adjust for header and input heights */
             min-height: 0;
+            margin-bottom: 0; // Add this to prevent pushing content down
         }
 
         .n8n-chat-widget .chat-message {
@@ -228,6 +229,9 @@
             border-top: 1px solid rgba(133, 79, 255, 0.1);
             display: flex;
             gap: 8px;
+            position: sticky; // Add this
+            bottom: 0; // Add this
+            z-index: 3; // Add this
         }
 
         .n8n-chat-widget .chat-input textarea {
@@ -602,14 +606,21 @@
     });
     
     toggleButton.addEventListener('click', () => {
-        chatContainer.classList.toggle('open');
+        if (chatContainer.classList.contains('open')) {
+            chatContainer.classList.remove('open');
+            chatContainer.style.display = 'none';
+        } else {
+            chatContainer.classList.add('open');
+            chatContainer.style.display = 'flex';
+        }
     });
 
-    // Add close button handlers
+    // Update close button handlers
     const closeButtons = chatContainer.querySelectorAll('.close-button');
     closeButtons.forEach(button => {
         button.addEventListener('click', () => {
             chatContainer.classList.remove('open');
+            chatContainer.style.display = 'none';
         });
     });
 })();
