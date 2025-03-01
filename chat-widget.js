@@ -3,8 +3,8 @@
     // Create and inject styles
     const styles = `
         .n8n-chat-widget {
-            --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
-            --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
+            --chat--color-primary: var(--n8n-chat-primary-color, #d2ec0b);
+            --chat--color-secondary: var(--n8n-chat-secondary-color, #eff6e0);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -16,55 +16,7 @@
             right: 20px;
             z-index: 1000;
             width: 380px;
-            height: 600px;
-            max-height: 80vh;
-            background: var(--chat--color-background);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(133, 79, 255, 0.15);
-            border: 1px solid rgba(133, 79, 255, 0.2);
-            overflow: hidden;
-            font-family: inherit;
-            display: none;  // Only one display property
-            flex-direction: column;
-        }
-
-        .n8n-chat-widget .chat-container.open {
-            display: flex;
-        }
-
-        .n8n-chat-widget .brand-header {
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid rgba(133, 79, 255, 0.1);
-            background: var(--chat--color-background);
-            z-index: 2;
-            position: sticky; // Change from relative to sticky
-            top: 0; // Add this
-            width: 100%; // Add this
-        }
-
-        .n8n-chat-widget .new-conversation {
-            // Remove absolute positioning
-            position: relative;
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-            max-width: 300px;
-            margin: auto; // Add this to center the content
-            flex: 1; // Add this
-            display: flex; // Add this
-            flex-direction: column; // Add this
-            justify-content: center; // Add this
-        }
-
-        .n8n-chat-widget .chat-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            width: 380px;
+            max-width: 90vw;
             height: 600px;
             max-height: 80vh;
             background: var(--chat--color-background);
@@ -77,15 +29,108 @@
             flex-direction: column;
         }
 
+        .n8n-chat-widget .chat-container.open {
+            display: flex;
+        }
+
+        .n8n-chat-widget .brand-header {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(133, 79, 255, 0.1);
+            background: var(--chat--color-background);
+            z-index: 2;
+            position: sticky;
+            top: 0;
+            width: 100%;
+        }
+
+        .n8n-chat-widget .brand-header img {
+            max-width: 40px;
+            max-height: 40px;
+            object-fit: contain;
+        }
+
+        .n8n-chat-widget .new-conversation {
+            position: relative;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            margin: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .n8n-chat-widget .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .n8n-chat-widget .chat-message {
+            margin-bottom: 12px;
+            max-width: 70%;
+        }
+
+        .n8n-chat-widget .chat-message.user {
+            background: var(--chat--color-primary);
+            color: #ffffff;
+            border-radius: 8px 8px 0 8px;
+            padding: 10px;
+            margin-left: auto;
+        }
+
+        .n8n-chat-widget .chat-message.bot {
+            background: var(--chat--color-background);
+            color: var(--chat--color-font);
+            border-radius: 8px 8px 8px 0;
+            padding: 10px;
+            margin-right: auto;
+        }
+
+        .n8n-chat-widget .chat-message.loading {
+            opacity: 0.7;
+        }
+
+        .n8n-chat-widget .typing-indicator {
+            display: flex;
+            gap: 4px;
+        }
+
+        .n8n-chat-widget .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--chat--color-primary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .n8n-chat-widget .typing-indicator span:nth-child(2) {
+            animation-delay: -0.2s;
+        }
+
+        .n8n-chat-widget .typing-indicator span:nth-child(3) {
+            animation-delay: -0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
         .n8n-chat-widget .chat-input {
             padding: 16px;
             background: var(--chat--color-background);
             border-top: 1px solid rgba(133, 79, 255, 0.1);
             display: flex;
             gap: 8px;
-            position: sticky; // Add this
-            bottom: 0; // Add this
-            z-index: 3; // Add this
+            position: sticky;
+            bottom: 0;
+            z-index: 3;
         }
 
         .n8n-chat-widget .chat-input textarea {
@@ -174,6 +219,38 @@
         .n8n-chat-widget .chat-footer a:hover {
             opacity: 1;
         }
+
+        @media (max-width: 768px) {
+            .n8n-chat-widget .chat-container {
+                width: 85vw;
+                height: 70vh;
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .n8n-chat-widget .chat-toggle {
+                width: 50px;
+                height: 50px;
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .n8n-chat-widget .brand-header img {
+                max-width: 30px;
+                max-height: 30px;
+            }
+
+            .n8n-chat-widget .chat-input textarea {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .n8n-chat-widget .chat-container {
+                width: 90vw;
+                height: 65vh;
+            }
+        }
     `;
 
     // Load Geist font
@@ -238,7 +315,7 @@
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
-    chatContainer.style.display = 'none'; // Ensure it starts hidden
+    chatContainer.style.display = 'none';
     
     const newConversationHTML = `
         <div class="brand-header">
@@ -297,24 +374,20 @@
     async function startNewConversation() {
         currentSessionId = generateUUID();
         
-        // Clear existing messages and show chat interface
         messagesContainer.innerHTML = '';
         const welcomeScreen = chatContainer.querySelector('.new-conversation');
         const initialHeader = chatContainer.querySelector('.brand-header');
         
-        // Hide welcome screen but keep the header
         welcomeScreen.style.display = 'none';
         initialHeader.style.display = 'flex';
         chatInterface.classList.add('active');
 
-        // Add initial welcome message
         const welcomeMessageDiv = document.createElement('div');
         welcomeMessageDiv.className = 'chat-message bot';
         welcomeMessageDiv.innerHTML = `Hello! 👋 Welcome to ${config.branding.name}. How can I assist you today?`;
         messagesContainer.appendChild(welcomeMessageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-        // Add loading indicator
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'chat-message bot loading';
         loadingDiv.innerHTML = `
@@ -344,7 +417,6 @@
                 })
             });
 
-            // Remove loading indicator
             loadingDiv.remove();
 
             if (!response.ok) {
@@ -361,7 +433,6 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            // Remove loading indicator
             loadingDiv.remove();
             
             const errorMessageDiv = document.createElement('div');
@@ -381,7 +452,6 @@
         messagesContainer.appendChild(userMessageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-        // Add loading indicator
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'chat-message bot loading';
         loadingDiv.innerHTML = `
@@ -412,7 +482,6 @@
                 })
             });
             
-            // Remove loading indicator
             loadingDiv.remove();
 
             if (!response.ok) {
@@ -427,7 +496,6 @@
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
-            // Remove loading indicator
             loadingDiv.remove();
 
             console.error('Error:', error);
@@ -464,15 +532,20 @@
         const isOpen = chatContainer.classList.contains('open');
         chatContainer.classList.toggle('open');
         chatContainer.style.display = isOpen ? 'none' : 'flex';
+        if (!isOpen) {
+            chatContainer.focus();
+        }
     });
 
     // Update close button handlers
     const closeButtons = chatContainer.querySelectorAll('.close-button');
     closeButtons.forEach(button => {
         button.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent event bubbling
+            e.stopPropagation();
             chatContainer.classList.remove('open');
             chatContainer.style.display = 'none';
         });
     });
+
+    console.log('Chat widget initialized with config:', config);
 })();
