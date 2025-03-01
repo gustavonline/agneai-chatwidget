@@ -15,9 +15,7 @@
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            display: none;
             width: 380px;
-            display: none; // Remove duplicate display property
             height: 600px;
             max-height: 80vh;
             background: var(--chat--color-background);
@@ -26,18 +24,12 @@
             border: 1px solid rgba(133, 79, 255, 0.2);
             overflow: hidden;
             font-family: inherit;
-            display: flex;
+            display: none;  // Only one display property
             flex-direction: column;
-        }
-
-        .n8n-chat-widget .chat-container.position-left {
-            right: auto;
-            left: 20px;
         }
 
         .n8n-chat-widget .chat-container.open {
             display: flex;
-            flex-direction: column;
         }
 
         .n8n-chat-widget .brand-header {
@@ -384,6 +376,7 @@
 
     const chatContainer = document.createElement('div');
     chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
+    chatContainer.style.display = 'none'; // Ensure it starts hidden
     
     const newConversationHTML = `
         <div class="brand-header">
@@ -606,19 +599,16 @@
     });
     
     toggleButton.addEventListener('click', () => {
-        if (chatContainer.classList.contains('open')) {
-            chatContainer.classList.remove('open');
-            chatContainer.style.display = 'none';
-        } else {
-            chatContainer.classList.add('open');
-            chatContainer.style.display = 'flex';
-        }
+        const isOpen = chatContainer.classList.contains('open');
+        chatContainer.classList.toggle('open');
+        chatContainer.style.display = isOpen ? 'none' : 'flex';
     });
 
     // Update close button handlers
     const closeButtons = chatContainer.querySelectorAll('.close-button');
     closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event bubbling
             chatContainer.classList.remove('open');
             chatContainer.style.display = 'none';
         });
