@@ -177,6 +177,44 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
+        .n8n-chat-widget .chat-message.loading {
+            background: none;
+            border: none;
+            box-shadow: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+        }
+
+        .n8n-chat-widget .typing-indicator {
+            display: flex;
+            gap: 4px;
+            background: var(--chat--color-background);
+            border: 1px solid rgba(133, 79, 255, 0.2);
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .n8n-chat-widget .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--chat--color-primary);
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out;
+            opacity: 0.6;
+        }
+
+        .n8n-chat-widget .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .n8n-chat-widget .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+        }
+
         .n8n-chat-widget .chat-input {
             padding: 16px;
             background: var(--chat--color-background);
@@ -397,24 +435,30 @@
 
     async function startNewConversation() {
         currentSessionId = generateUUID();
-        const data = {
-            action: "loadPreviousSession",
-            sessionId: currentSessionId,
-            route: config.webhook.route,
-            metadata: {
-                userId: ""
-            }
-        };
-
-        // Show chat interface immediately
+        
+        // Clear existing messages and show chat interface
+        messagesContainer.innerHTML = '';
         chatContainer.querySelector('.new-conversation').style.display = 'none';
         chatInterface.classList.add('active');
 
-        // Add immediate welcome message
+        // Add initial welcome message
         const welcomeMessageDiv = document.createElement('div');
         welcomeMessageDiv.className = 'chat-message bot';
-        welcomeMessageDiv.textContent = 'Hello! 👋 Welcome to Agne AI. How can I assist you today?';
+        welcomeMessageDiv.innerHTML = `Hello! 👋 Welcome to ${config.branding.name}. How can I assist you today?`;
         messagesContainer.appendChild(welcomeMessageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Add loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'chat-message bot loading';
+        loadingDiv.innerHTML = `
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+        messagesContainer.appendChild(loadingDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
@@ -426,8 +470,16 @@
                     'Origin': window.location.origin
                 },
                 mode: 'cors',
-                body: JSON.stringify(data)  // Add the request body
+                body: JSON.stringify({
+                    action: "loadPreviousSession",
+                    sessionId: currentSessionId,
+                    route: config.webhook.route,
+                    metadata: { userId: "" }
+                })
             });
+
+            // Remove loading indicator
+            loadingDiv.remove();
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -437,30 +489,43 @@
             if (responseData.output || responseData.message) {
                 const botMessageDiv = document.createElement('div');
                 botMessageDiv.className = 'chat-message bot';
-                botMessageDiv.textContent = responseData.output || responseData.message;
+                botMessageDiv.innerHTML = responseData.output || responseData.message;
                 messagesContainer.appendChild(botMessageDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
         } catch (error) {
             console.error('Error:', error);
+            // Remove loading indicator
+            loadingDiv.remove();
+            
+            const errorMessageDiv = document.createElement('div');
+            errorMessageDiv.className = 'chat-message bot';
+            errorMessageDiv.textContent = 'I\'m ready to help! What would you like to know about our services?';
+            messagesContainer.appendChild(errorMessageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
     }
 
     async function sendMessage(message) {
-        const messageData = {  // Changed from array to object
-            action: "sendMessage",
-            sessionId: currentSessionId,
-            route: config.webhook.route,
-            chatInput: message,
-            metadata: {
-                userId: ""
-            }
-        };
+        if (!message.trim()) return;
 
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'chat-message user';
         userMessageDiv.textContent = message;
         messagesContainer.appendChild(userMessageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Add loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'chat-message bot loading';
+        loadingDiv.innerHTML = `
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+        messagesContainer.appendChild(loadingDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
@@ -477,12 +542,13 @@
                     sessionId: currentSessionId,
                     route: config.webhook.route,
                     chatInput: message,
-                    metadata: {
-                        userId: ""
-                    }
+                    metadata: { userId: "" }
                 })
             });
             
+            // Remove loading indicator
+            loadingDiv.remove();
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -491,10 +557,13 @@
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = data.output || data.message || 'I received your message';
+            botMessageDiv.innerHTML = data.output || data.message || 'I received your message';
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
+            // Remove loading indicator
+            loadingDiv.remove();
+
             console.error('Error:', error);
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
