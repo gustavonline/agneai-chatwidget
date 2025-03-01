@@ -1,10 +1,34 @@
 (function() {
+    // Load Geist font
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://cdn.jsdelivr.net/npm/geist@1.0.0/dist/fonts/geist-sans/style.css';
+    document.head.appendChild(fontLink);
+
+    // Create and inject styles
+    const styles = `
+        .n8n-chat-widget {
+            --chat--color-primary: var(--n8n-chat-primary-color, #854fff);
+            --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
+            --chat--color-background: var(--n8n-chat-background-color, #ffffff);
+            --chat--color-font: var(--n8n-chat-font-color, #333333);
+            font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+    `;
+
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
+
     // Default configuration
     const defaultConfig = {
         webhookUrl: '',
-        mode: 'window', // 'window' or 'fullscreen'
-        showWelcomeScreen: true,
-        defaultLanguage: 'en',
+        mode: 'window',
+        style: {
+            position: 'right',
+            primaryColor: '#854fff',
+            secondaryColor: '#6b3fd4'
+        },
         initialMessages: [
             'Hi there! 👋',
             'How can I assist you today?'
@@ -13,8 +37,6 @@
             en: {
                 title: 'Chat Assistant',
                 subtitle: "I'm here to help you 24/7",
-                footer: '',
-                getStarted: 'New Conversation',
                 inputPlaceholder: 'Type your message...',
             }
         }
@@ -27,80 +49,30 @@
         }
 
         init() {
-            // Create chat container
             const container = document.createElement('div');
-            container.id = 'n8n-chat-widget';
-            container.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 9999;
-            `;
-
-            // Create chat button
-            const button = document.createElement('button');
-            button.innerHTML = '💬';
-            button.style.cssText = `
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                background: #20b69e;
-                border: none;
-                color: white;
-                font-size: 24px;
-                cursor: pointer;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            `;
-
-            // Create chat window
+            container.className = 'n8n-chat-widget';
+            
             const chatWindow = document.createElement('div');
-            chatWindow.style.cssText = `
-                display: none;
-                position: absolute;
-                bottom: 80px;
-                right: 0;
-                width: 350px;
-                height: 500px;
-                background: white;
-                border-radius: 10px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                overflow: hidden;
-            `;
-
+            chatWindow.className = `chat-container${this.config.style.position === 'left' ? ' position-left' : ''}`;
+            
             // Add chat header
             const header = document.createElement('div');
-            header.style.cssText = `
-                padding: 15px;
-                background: #101330;
-                color: white;
-            `;
+            header.className = 'brand-header';
             header.innerHTML = `
-                <h3 style="margin: 0;">${this.config.i18n.en.title}</h3>
-                <p style="margin: 5px 0 0;">${this.config.i18n.en.subtitle}</p>
+                <span>${this.config.i18n.en.title}</span>
+                <button class="close-button">×</button>
             `;
 
             // Add chat messages container
             const messagesContainer = document.createElement('div');
-            messagesContainer.style.cssText = `
-                height: calc(100% - 120px);
-                overflow-y: auto;
-                padding: 15px;
-            `;
+            messagesContainer.className = 'chat-messages';
 
             // Add chat input
             const input = document.createElement('div');
-            input.style.cssText = `
-                padding: 15px;
-                border-top: 1px solid #eee;
-            `;
+            input.className = 'chat-input';
             input.innerHTML = `
-                <input type="text" placeholder="${this.config.i18n.en.inputPlaceholder}" style="
-                    width: 100%;
-                    padding: 8px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    box-sizing: border-box;
-                ">
+                <textarea placeholder="${this.config.i18n.en.inputPlaceholder}" rows="1"></textarea>
+                <button type="submit">Send</button>
             `;
 
             // Assemble chat window
@@ -108,23 +80,48 @@
             chatWindow.appendChild(messagesContainer);
             chatWindow.appendChild(input);
 
-            // Add click handler for toggle
-            button.addEventListener('click', () => {
-                chatWindow.style.display = chatWindow.style.display === 'none' ? 'block' : 'none';
+            // Create toggle button
+            const toggleButton = document.createElement('button');
+            toggleButton.className = `chat-toggle${this.config.style.position === 'left' ? ' position-left' : ''}`;
+            toggleButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2.5 21.5l4.5-.838A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/>
+                </svg>
+            `;
+
+            // Event handlers
+            toggleButton.addEventListener('click', () => {
+                chatWindow.classList.toggle('open');
             });
 
-            // Add message handling
-            const inputField = input.querySelector('input');
-            inputField.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && inputField.value.trim()) {
-                    this.sendMessage(inputField.value.trim(), messagesContainer);
-                    inputField.value = '';
+            const closeButton = header.querySelector('.close-button');
+            closeButton.addEventListener('click', () => {
+                chatWindow.classList.remove('open');
+            });
+
+            const textarea = input.querySelector('textarea');
+            const sendButton = input.querySelector('button');
+
+            const sendMessage = () => {
+                const message = textarea.value.trim();
+                if (message) {
+                    this.sendMessage(message, messagesContainer);
+                    textarea.value = '';
+                }
+            };
+
+            textarea.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
                 }
             });
 
-            // Append elements to container
+            sendButton.addEventListener('click', sendMessage);
+
+            // Append elements
             container.appendChild(chatWindow);
-            container.appendChild(button);
+            container.appendChild(toggleButton);
             document.body.appendChild(container);
 
             // Show initial messages
@@ -207,11 +204,6 @@
         }
     }
 
-    // Make ChatWidget available globally
-    // Change the last part from:
-    window.ChatWidget = ChatWidget;
-    
-    // To this:
     if (typeof window !== 'undefined') {
         window.ChatWidget = ChatWidget;
     }
