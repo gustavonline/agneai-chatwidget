@@ -7,7 +7,7 @@
             --chat--color-secondary: var(--n8n-chat-secondary-color, #6b3fd4);
             --chat--color-background: var(--n8n-chat-background-color, #ffffff);
             --chat--color-font: var(--n8n-chat-font-color, #333333);
-            font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
         .n8n-chat-widget .chat-container {
@@ -397,20 +397,21 @@
 
     async function startNewConversation() {
         currentSessionId = generateUUID();
-        const data = [{
+        const data = {  // Changed from array to object
             action: "loadPreviousSession",
             sessionId: currentSessionId,
             route: config.webhook.route,
             metadata: {
                 userId: ""
             }
-        }];
+        };
 
         try {
             const response = await fetch(config.webhook.url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'  // Added Accept header
                 },
                 body: JSON.stringify(data)
             });
@@ -422,16 +423,17 @@
 
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(responseData) ? responseData[0].output : responseData.output;
+            botMessageDiv.textContent = responseData.output || responseData.message || 'Hello! How can I help you?';
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
             console.error('Error:', error);
+            chatInterface.classList.add('active');
         }
     }
 
     async function sendMessage(message) {
-        const messageData = {
+        const messageData = {  // Changed from array to object
             action: "sendMessage",
             sessionId: currentSessionId,
             route: config.webhook.route,
