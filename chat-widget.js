@@ -18,6 +18,7 @@
             display: none;
             width: 380px;
             height: 600px;
+            max-height: 80vh; // Add max-height
             background: var(--chat--color-background);
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(133, 79, 255, 0.15);
@@ -438,7 +439,12 @@
         
         // Clear existing messages and show chat interface
         messagesContainer.innerHTML = '';
-        chatContainer.querySelector('.new-conversation').style.display = 'none';
+        const welcomeScreen = chatContainer.querySelector('.new-conversation');
+        const initialHeader = chatContainer.querySelector('.brand-header');
+        
+        // Hide welcome screen but keep the header
+        welcomeScreen.style.display = 'none';
+        initialHeader.style.display = 'flex';
         chatInterface.classList.add('active');
 
         // Add initial welcome message
