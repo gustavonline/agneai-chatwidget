@@ -525,19 +525,19 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json', // Added Accept header for better response handling
-                    'Origin': window.location.origin // Added for CORS if needed
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
                 body: JSON.stringify(data)
             });
-
-            removeTypingIndicator(loadingDiv);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const responseData = await response.json();
+            removeTypingIndicator(loadingDiv);
+
             chatContainer.querySelector('.brand-header').style.display = 'none';
             chatContainer.querySelector('.new-conversation').style.display = 'none';
             chatInterface.classList.add('active');
@@ -553,7 +553,7 @@
 
             const errorMessageDiv = document.createElement('div');
             errorMessageDiv.className = 'chat-message bot';
-            errorMessageDiv.textContent = 'Sorry, there was an issue connecting to the server. Please try again later or contact support.';
+            errorMessageDiv.textContent = `Sorry, there was an issue connecting to the server (Error ${error.message}). Please try again later or contact support.`;
             messagesContainer.appendChild(errorMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
@@ -587,14 +587,13 @@
                 body: JSON.stringify(messageData)
             });
             
-            removeTypingIndicator(loadingDiv);
-
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
-            
+            removeTypingIndicator(loadingDiv);
+
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
             botMessageDiv.textContent = Array.isArray(data) ? data[0].output : data.output || 'I received your message';
@@ -606,7 +605,7 @@
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = 'Sorry, there was an error processing your message. Please try again.';
+            botMessageDiv.textContent = `Sorry, there was an error processing your message (Error ${error.message}). Please try again.`;
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
