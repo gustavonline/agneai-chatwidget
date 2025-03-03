@@ -4,6 +4,7 @@ import { defaultConfig } from './config.js';
 (function() {
     let currentSessionId = '';
     let isInitialized = false;
+    // We'll keep this flag but use it differently
     let isConversationStarted = false;
 
     function loadResources() {
@@ -37,7 +38,32 @@ import { defaultConfig } from './config.js';
 
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
-        chatContainer.innerHTML = createNewConversationHTML(config) + createChatInterfaceHTML(config);
+        
+        // Modified to directly show chat interface instead of welcome screen
+        chatContainer.innerHTML = `
+            <div class="brand-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="${config.branding.logo}" alt="${config.branding.name}">
+                    <span style="font-weight: 600;">${config.branding.name}</span>
+                </div>
+                <button class="close-button">×</button>
+            </div>
+            <div class="chat-interface active">
+                <div class="chat-messages"></div>
+                ${createStarterButtons(config)}
+                <div class="chat-input">
+                    <textarea placeholder="Type your message here..." rows="1"></textarea>
+                    <button type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="chat-footer">
+                    <a href="${config.branding.poweredBy.link}" target="_blank">${config.branding.poweredBy.text}</a>
+                </div>
+            </div>
+        `;
 
         const toggleButton = document.createElement('button');
         toggleButton.className = `chat-toggle${config.style.position === 'left' ? ' position-left' : ''}`;
@@ -51,6 +77,25 @@ import { defaultConfig } from './config.js';
         document.body.appendChild(widgetContainer);
 
         return { chatContainer, toggleButton };
+    }
+
+    // New function to create starter buttons
+    function createStarterButtons(config) {
+        if (!config.starterButtons || !config.starterButtons.length) {
+            return '';
+        }
+
+        let buttonsHtml = '<div class="starter-buttons">';
+        config.starterButtons.forEach(button => {
+            buttonsHtml += `
+                <button class="starter-button" data-message="${button.message}">
+                    ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
+                    ${button.text}
+                </button>
+            `;
+        });
+        buttonsHtml += '</div>';
+        return buttonsHtml;
     }
 
     // Function to safely parse markdown
@@ -77,14 +122,18 @@ import { defaultConfig } from './config.js';
     }
 
     async function startNewConversation(elements, config) {
+        if (isConversationStarted) return;
+        
         currentSessionId = generateUUID();
         isConversationStarted = true;
         
-        const { messagesContainer, welcomeScreen, initialHeader, chatInterface } = elements;
-        messagesContainer.innerHTML = '';
-        welcomeScreen.style.display = 'none';
-        initialHeader.style.display = 'flex';
-        chatInterface.classList.add('active');
+        const { messagesContainer } = elements;
+        
+        // Hide starter buttons after conversation starts
+        const starterButtons = document.querySelector('.starter-buttons');
+        if (starterButtons) {
+            starterButtons.style.display = 'none';
+        }
 
         const welcomeMessageDiv = document.createElement('div');
         welcomeMessageDiv.className = 'chat-message bot';
@@ -127,7 +176,12 @@ import { defaultConfig } from './config.js';
     }
 
     async function sendMessage(message, elements, config) {
-        if (!message.trim() || !isConversationStarted) return;
+        if (!message.trim()) return;
+
+        // Start conversation if not already started
+        if (!isConversationStarted) {
+            await startNewConversation(elements, config);
+        }
 
         const { messagesContainer } = elements;
         
@@ -201,44 +255,42 @@ import { defaultConfig } from './config.js';
             {
                 webhook: { ...defaultConfig.webhook, ...window.ChatWidgetConfig.webhook },
                 branding: { ...defaultConfig.branding, ...window.ChatWidgetConfig.branding },
-                style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style }
+                style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style },
+                starterButtons: window.ChatWidgetConfig.starterButtons || []
             } : defaultConfig;
 
         loadResources();
         const { chatContainer, toggleButton } = createChatWidget(config);
 
         const elements = {
-            newChatBtn: chatContainer.querySelector('.new-chat-btn'),
             chatInterface: chatContainer.querySelector('.chat-interface'),
             messagesContainer: chatContainer.querySelector('.chat-messages'),
             textarea: chatContainer.querySelector('textarea'),
             sendButton: chatContainer.querySelector('button[type="submit"]'),
-            welcomeScreen: chatContainer.querySelector('.new-conversation'),
             initialHeader: chatContainer.querySelector('.brand-header'),
         };
 
-        // Disable chat input until conversation is started
-        elements.textarea.disabled = true;
-        elements.sendButton.disabled = true;
-
-        elements.newChatBtn.addEventListener('click', () => {
-            startNewConversation(elements, config);
-            // Enable chat input after conversation is started
-            elements.textarea.disabled = false;
-            elements.sendButton.disabled = false;
+        // Add event listeners for starter buttons
+        const starterButtons = chatContainer.querySelectorAll('.starter-button');
+        starterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const message = button.getAttribute('data-message');
+                if (message) {
+                    sendMessage(message, elements, config);
+                    // Hide all starter buttons after one is clicked
+                    document.querySelector('.starter-buttons').style.display = 'none';
+                }
+            });
         });
         
         elements.textarea.addEventListener('input', () => autoResizeTextarea(elements.textarea));
         
         elements.sendButton.addEventListener('click', () => {
             const message = elements.textarea.value.trim();
-            if (message && isConversationStarted) {
+            if (message) {
                 sendMessage(message, elements, config);
                 elements.textarea.value = '';
                 elements.textarea.style.height = 'auto';
-            } else if (!isConversationStarted) {
-                // Show a message if user tries to send before starting conversation
-                alert('Please click "Send us a message" to start the conversation first.');
             }
         });
 
@@ -246,13 +298,10 @@ import { defaultConfig } from './config.js';
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 const message = elements.textarea.value.trim();
-                if (message && isConversationStarted) {
+                if (message) {
                     sendMessage(message, elements, config);
                     elements.textarea.value = '';
                     elements.textarea.style.height = 'auto';
-                } else if (!isConversationStarted) {
-                    // Show a message if user tries to send before starting conversation
-                    alert('Please click "Send us a message" to start the conversation first.');
                 }
             }
         });
@@ -265,6 +314,11 @@ import { defaultConfig } from './config.js';
             } else {
                 chatContainer.style.display = 'flex';
                 setTimeout(() => chatContainer.classList.add('open'), 10);
+                
+                // Start conversation when chat is opened if not already started
+                if (!isConversationStarted) {
+                    startNewConversation(elements, config);
+                }
             }
         });
 
