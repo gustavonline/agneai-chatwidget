@@ -3,11 +3,11 @@
     if (window.N8NChatWidgetInitialized) return;
     window.N8NChatWidgetInitialized = true;
 
-    // Inject styles
+    // Inject styles (using system fonts and matching the screenshot)
     const styles = `
         .n8n-chat-widget {
-            --chat--color-primary: #4CAF50; /* Green primary color, inspired by modern chat designs */
-            --chat--color-secondary: #45a049; /* Slightly darker green for hover/secondary */
+            --chat--color-primary: #4CAF50; /* Green for Send button and bot messages */
+            --chat--color-secondary: #e8f5e9; /* Light green for user messages */
             --chat--color-background: #ffffff; /* White background */
             --chat--color-font: #333333; /* Dark gray text */
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -18,13 +18,13 @@
             bottom: 20px;
             right: 20px;
             z-index: 1000;
-            width: 380px;
-            height: 600px;
+            width: 360px; /* Slightly adjusted to match screenshot */
+            height: 500px; /* Adjusted height to match screenshot */
             max-height: 80vh;
             background: var(--chat--color-background);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(76, 175, 80, 0.15);
-            border: 1px solid rgba(76, 175, 80, 0.2);
+            border-radius: 8px; /* Smaller radius for a cleaner look */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border: 1px solid rgba(0, 0, 0, 0.1);
             overflow: hidden;
             font-family: inherit;
             display: none;
@@ -36,11 +36,11 @@
         }
 
         .n8n-chat-widget .brand-header {
-            padding: 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             background: var(--chat--color-background);
             z-index: 2;
             position: sticky;
@@ -62,8 +62,8 @@
 
         .n8n-chat-widget .chat-message {
             margin-bottom: 12px;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px 12px;
+            border-radius: 6px; /* Smaller radius for messages */
             max-width: 70%;
             font-size: 14px;
             line-height: 1.5;
@@ -78,15 +78,15 @@
 
         .n8n-chat-widget .chat-message.user {
             background: var(--chat--color-secondary);
-            color: #ffffff;
+            color: var(--chat--color-font);
             margin-right: 0;
             align-self: flex-end;
         }
 
         .n8n-chat-widget .chat-input {
-            padding: 16px;
+            padding: 12px 16px;
             background: var(--chat--color-background);
-            border-top: 1px solid rgba(76, 175, 80, 0.1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
             display: flex;
             gap: 8px;
             position: sticky;
@@ -96,9 +96,9 @@
 
         .n8n-chat-widget .chat-input textarea {
             flex: 1;
-            padding: 12px;
-            border: 1px solid rgba(76, 175, 80, 0.2);
-            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
             background: var(--chat--color-background);
             color: var(--chat--color-font);
             resize: vertical;
@@ -113,15 +113,17 @@
         }
 
         .n8n-chat-widget .chat-input button {
-            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            background: var(--chat--color-primary);
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 0 20px;
+            border-radius: 6px;
+            padding: 8px 16px;
             cursor: pointer;
             transition: transform 0.2s;
             font-family: inherit;
             font-weight: 500;
+            font-size: 14px;
+            height: 40px; /* Match textarea height */
         }
 
         .n8n-chat-widget .chat-input button:hover {
@@ -135,7 +137,7 @@
             width: 60px;
             height: 60px;
             border-radius: 30px;
-            background: linear-gradient(135deg, var(--chat--color-primary) 0%, var(--chat--color-secondary) 100%);
+            background: var(--chat--color-primary);
             color: white;
             border: none;
             cursor: pointer;
@@ -161,7 +163,7 @@
             padding: 8px;
             text-align: center;
             background: var(--chat--color-background);
-            border-top: 1px solid rgba(76, 175, 80, 0.1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .n8n-chat-widget .chat-footer a {
@@ -210,15 +212,7 @@
         }
     `;
 
-    // Load Geist font (if not already loaded)
-    if (!document.querySelector('link[href="https://cdn.jsdelivr.net/npm/geist@1.0.0/dist/fonts/geist-sans/style.css"]')) {
-        const fontLink = document.createElement('link');
-        fontLink.rel = 'stylesheet';
-        fontLink.href = 'https://cdn.jsdelivr.net/npm/geist@1.0.0/dist/fonts/geist-sans/style.css';
-        document.head.appendChild(fontLink);
-    }
-
-    // Inject styles
+    // Inject styles (no font dependency)
     if (!document.querySelector('style[data-n8n-chat]')) {
         const styleSheet = document.createElement('style');
         styleSheet.setAttribute('data-n8n-chat', 'true');
@@ -234,17 +228,17 @@
         },
         branding: {
             logo: '',
-            name: '',
+            name: 'Agne AI',
             welcomeText: '',
             responseTimeText: '',
             poweredBy: {
-                text: 'Powered by n8n',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                text: 'Powered by Agne AI',
+                link: 'https://agneai.com/'
             }
         },
         style: {
             primaryColor: '#4CAF50',
-            secondaryColor: '#45a049',
+            secondaryColor: '#e8f5e9',
             position: 'right',
             backgroundColor: '#ffffff',
             fontColor: '#333333'
@@ -265,7 +259,8 @@
         return;
     }
 
-    let currentSessionId = '';
+    let currentSessionId = localStorage.getItem('chatSessionId') || crypto.randomUUID();
+    localStorage.setItem('chatSessionId', currentSessionId);
 
     // Create widget container
     const widgetContainer = document.createElement('div');
@@ -284,8 +279,8 @@
 
     const chatInterfaceHTML = `
         <div class="brand-header">
-            <img src="${config.branding.logo || ''}" alt="${config.branding.name || 'Agne AI'}">
-            <span>${config.branding.name || 'Agne AI'}</span>
+            <img src="${config.branding.logo || ''}" alt="${config.branding.name}">
+            <span>${config.branding.name}</span>
             <button class="close-button" aria-label="Close chat">×</button>
         </div>
         <div class="chat-interface">
@@ -295,7 +290,7 @@
                 <button type="submit" aria-label="Send message">Send</button>
             </div>
             <div class="chat-footer">
-                <a href="${config.branding.poweredBy.link || '#'}">${config.branding.poweredBy.text || 'Powered by n8n'}</a>
+                <a href="${config.branding.poweredBy.link || '#'}">${config.branding.poweredBy.text}</a>
             </div>
         </div>
     `;
@@ -319,19 +314,12 @@
     const sendButton = chatContainer.querySelector('button[type="submit"]');
     const closeButton = chatContainer.querySelector('.close-button');
 
-    function generateUUID() {
-        return crypto.randomUUID();
-    }
-
     async function startNewConversation() {
-        currentSessionId = generateUUID() || localStorage.getItem('chatSessionId') || generateUUID();
-        localStorage.setItem('chatSessionId', currentSessionId);
-
         messagesContainer.innerHTML = '';
         
         const welcomeMessageDiv = document.createElement('div');
         welcomeMessageDiv.className = 'chat-message bot';
-        welcomeMessageDiv.innerHTML = `Hello! 👋 Welcome to ${config.branding.name || 'Agne AI'}. How can I assist you today?`;
+        welcomeMessageDiv.innerHTML = `Hello! 👋 Welcome to ${config.branding.name}. How can I assist you today?`;
         messagesContainer.appendChild(welcomeMessageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
@@ -366,10 +354,10 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Webhook Error:', error.message);
             const errorMessageDiv = document.createElement('div');
             errorMessageDiv.className = 'chat-message bot';
-            errorMessageDiv.textContent = 'Sorry, there was an error. Please try again.';
+            errorMessageDiv.textContent = 'Sorry, there was an error connecting to our AI. Please try again later or contact support.';
             messagesContainer.appendChild(errorMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
@@ -423,7 +411,7 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         } catch (error) {
             loadingDiv.remove();
-            console.error('Error:', error);
+            console.error('Send Message Error:', error.message);
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
             botMessageDiv.textContent = 'Sorry, there was an error processing your message. Please try again.';
