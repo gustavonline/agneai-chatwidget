@@ -353,9 +353,10 @@ import { defaultConfig } from './config.js';
                         chatContainer.style.display = 'flex';
                         setTimeout(() => {
                             chatContainer.classList.add('open');
-                            if (!isConversationStarted) {
-                                startNewConversation(elements, config);
-                            }
+                            // Remove this line - don't start conversation automatically
+                            // if (!isConversationStarted) {
+                            //     startNewConversation(elements, config);
+                            // }
                         }, 10);
                     }
                 });
