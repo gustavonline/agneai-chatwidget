@@ -4,7 +4,6 @@ import { defaultConfig } from './config.js';
 (function() {
     let currentSessionId = '';
     let isInitialized = false;
-    // We'll keep this flag but use it differently
     let isConversationStarted = false;
 
     function loadResources() {
@@ -38,10 +37,10 @@ import { defaultConfig } from './config.js';
     
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
-        
-        // Create starter buttons HTML first - IMPORTANT: Remove the 'hidden' class here
+    
+        // Create starter buttons HTML
         const starterButtonsHTML = config.starterButtons && config.starterButtons.length > 0 
-            ? `<div class="starter-buttons">
+            ? `<div class="n8n-chat-widget starter-buttons">
                 ${config.starterButtons.map(button => `
                     <button class="starter-button" data-message="${button.message}">
                         ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
@@ -181,16 +180,19 @@ import { defaultConfig } from './config.js';
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
+    // Update the sendMessage function
     async function sendMessage(message, elements, config) {
-        if (!message.trim() || !isConversationStarted) return;
+        if (!message.trim()) return;
 
         const { messagesContainer } = elements;
         
+        // Create user message
         const userMessageDiv = document.createElement('div');
         userMessageDiv.className = 'chat-message user';
         userMessageDiv.textContent = message;
         messagesContainer.appendChild(userMessageDiv);
 
+        // Create loading indicator
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'chat-message bot loading';
         loadingDiv.innerHTML = `
@@ -201,6 +203,17 @@ import { defaultConfig } from './config.js';
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
+            if (!isConversationStarted) {
+                currentSessionId = generateUUID();
+                isConversationStarted = true;
+                
+                // Hide starter buttons
+                const starterButtons = document.querySelector('.n8n-chat-widget .starter-buttons');
+                if (starterButtons) {
+                    starterButtons.classList.add('hidden');
+                }
+            }
+
             // Only make the API call if webhook URL is provided
             if (config.webhook.url) {
                 // Use the webhook URL directly without adding /chat
@@ -253,6 +266,7 @@ import { defaultConfig } from './config.js';
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
+    // Update the initChatWidget function
     function initChatWidget() {
         if (isInitialized) return;
         isInitialized = true;
@@ -262,7 +276,7 @@ import { defaultConfig } from './config.js';
                 webhook: { ...defaultConfig.webhook, ...window.ChatWidgetConfig.webhook },
                 branding: { ...defaultConfig.branding, ...window.ChatWidgetConfig.branding },
                 style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style },
-                starterButtons: window.ChatWidgetConfig.starterButtons || []
+                starterButtons: window.ChatWidgetConfig.starterButtons || defaultConfig.starterButtons
             } : defaultConfig;
     
         loadResources();
@@ -336,9 +350,9 @@ import { defaultConfig } from './config.js';
                                 startNewConversation(elements, config);
                             }
                             sendMessage(message, elements, config);
-                            const starterButtonsContainer = button.closest('.starter-buttons');
+                            const starterButtonsContainer = document.querySelector('.starter-buttons');
                             if (starterButtonsContainer) {
-                                starterButtonsContainer.style.display = 'none';
+                                starterButtonsContainer.classList.add('hidden');
                             }
                         }
                     });
@@ -353,10 +367,15 @@ import { defaultConfig } from './config.js';
                         chatContainer.style.display = 'flex';
                         setTimeout(() => {
                             chatContainer.classList.add('open');
-                            // Remove this line - don't start conversation automatically
-                            // if (!isConversationStarted) {
-                            //     startNewConversation(elements, config);
-                            // }
+                            
+                            // Add welcome message if it doesn't exist yet and conversation hasn't started
+                            if (!isConversationStarted && elements.messagesContainer.children.length === 0) {
+                                const welcomeMessageDiv = document.createElement('div');
+                                welcomeMessageDiv.className = 'chat-message bot';
+                                welcomeMessageDiv.innerHTML = `Hello! 👋 Welcome to ${config.branding.name}. How can I assist you today?`;
+                                elements.messagesContainer.appendChild(welcomeMessageDiv);
+                                elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
+                            }
                         }, 10);
                     }
                 });
@@ -372,7 +391,7 @@ import { defaultConfig } from './config.js';
             } catch (error) {
                 console.error('Error initializing chat widget:', error);
             }
-        }, 300); // Increased delay to ensure resources are loaded
+        }, 100); // Added a slight delay to ensure resources are loaded
     }
 
     // Initialize when the script loads

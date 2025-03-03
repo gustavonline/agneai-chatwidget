@@ -4,21 +4,41 @@ export const defaultConfig = {
         route: ''
     },
     branding: {
-        logo: '',
-        name: 'Chat Widget',
-        welcomeText: 'Hello! How can I help you today?',
-        responseTimeText: 'We typically reply within a few minutes',
+        name: 'Agne AI',
+        logo: 'https://cdn.jsdelivr.net/gh/gustavonline/agneai-chatwidget@main/logo.png',
         poweredBy: {
-            text: 'Powered by Chat Widget',
-            link: '#'
-        }
+            text: 'Powered by Agne AI',
+            link: 'https://agneai.com'
+        },
+        welcomeText: 'Hello! 👋 Welcome to Agne AI. How can I assist you today?'
     },
     style: {
-        primaryColor: '#4F46E5',
-        secondaryColor: '#818CF8',
+        primaryColor: '#eff6e0',
+        secondaryColor: '#d2ec0b',
         backgroundColor: '#ffffff',
         fontColor: '#333333',
         position: 'right'
     },
-    starterButtons: [] // Add this to ensure the structure exists
+    starterButtons: [
+        {
+            text: 'What is Indlejning og besparelsen?',
+            message: 'Hvad er Indlejning og besparelsen?',
+            icon: '💰'
+        },
+        {
+            text: 'What is the price of Husbatteri?',
+            message: 'Hvad er prisen på Husbatteri?',
+            icon: '💰'
+        },
+        {
+            text: 'How do I get an offer?',
+            message: 'Hvordan får jeg et tilbud?',
+            icon: '📝'
+        },
+        {
+            text: 'How can I contact you?',
+            message: 'Hvordan kan jeg kontakte jer?',
+            icon: '👍'
+        }
+    ]
 };
