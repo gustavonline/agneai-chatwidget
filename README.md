@@ -11,29 +11,33 @@ To integrate the Agne AI Chat Widget into your website, add the following script
 <script>
   window.ChatWidgetConfig = {
     webhook: {
-      url: 'https://agneai-n8n.onrender.com/webhook/f406671e-c954-4691-b39a-66c90aa2f103/chat',
+      url: '',
       route: ''
     },
     branding: {
       logo: 'https://assets.zyrosite.com/AQEyo3nv9OSDvjb5/remove-background-preview-YbNv0D12bwTPQJoz.png',
-      name: 'Agne Ai demo',
+      name: 'Agne AI',
       welcomeText: 'Hello! How can I help you today?',
       responseTimeText: 'We typically reply within a few minutes',
       poweredBy: {
-        text: 'Powered by Agne Ai',
+        text: 'Powered by Agne AI',
         link: 'https://agneai.com/'
       }
     },
     style: {
-      primaryColor: '#eff6e0',
-      secondaryColor: '#d2ec0b',
+      primaryColor: '#4F46E5',
+      secondaryColor: '#818CF8',
       position: 'right',
       backgroundColor: '#ffffff',
       fontColor: '#333333'
     }
   };
 </script>
-<script src="https://cdn.jsdelivr.net/gh/gustavonline/agneai-chatwidget@b74c280/chat-widget.js"></script>
+
+<!-- Load the required files -->
+<script type="module" src="https://your-cdn-url/utils.js"></script>
+<script type="module" src="https://your-cdn-url/config.js"></script>
+<script type="module" src="https://your-cdn-url/chat-widget.js"></script>
 ```
 
 ## Configuration
