@@ -135,10 +135,10 @@ import { defaultConfig } from './config.js';
         
         const { messagesContainer } = elements;
         
-        // Hide starter buttons after conversation starts
+        // Update how we hide starter buttons
         const starterButtons = document.querySelector('.starter-buttons');
         if (starterButtons) {
-            starterButtons.style.display = 'none';
+            starterButtons.classList.add('hidden');
         }
 
         const welcomeMessageDiv = document.createElement('div');

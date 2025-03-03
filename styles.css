@@ -471,13 +471,20 @@
 /* Add these styles for the starter buttons */
 /* Update the starter buttons styles */
 .n8n-chat-widget .starter-buttons {
-    display: flex;
+    display: flex !important; /* Force display */
     flex-direction: column;
     gap: 10px;
     padding: 16px var(--chat--spacing);
     margin: 16px 0;
     width: 100%;
     box-sizing: border-box;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Only hide starter buttons when conversation has started */
+.n8n-chat-widget .starter-buttons.hidden {
+    display: none !important;
 }
 
 .n8n-chat-widget .starter-button {
