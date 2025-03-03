@@ -13,7 +13,7 @@ import { defaultConfig } from './config.js';
         // Load styles
         const styleLink = document.createElement('link');
         styleLink.rel = 'stylesheet';
-        styleLink.href = './styles.css';
+        styleLink.href = 'https://cdn.jsdelivr.net/gh/gustavonline/agneai-chatwidget@main/styles.css';
         document.head.appendChild(styleLink);
     }
 
