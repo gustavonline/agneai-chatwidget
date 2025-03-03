@@ -366,3 +366,105 @@
 .n8n-chat-widget .chat-interface.active {
     display: flex;
 }
+/* Add these styles at the end of your CSS file */
+
+/* Markdown styling for bot messages */
+.n8n-chat-widget .chat-message.bot {
+    line-height: 1.6;
+}
+
+.n8n-chat-widget .chat-message.bot h1,
+.n8n-chat-widget .chat-message.bot h2,
+.n8n-chat-widget .chat-message.bot h3,
+.n8n-chat-widget .chat-message.bot h4,
+.n8n-chat-widget .chat-message.bot h5,
+.n8n-chat-widget .chat-message.bot h6 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+.n8n-chat-widget .chat-message.bot h1 { font-size: 1.4em; }
+.n8n-chat-widget .chat-message.bot h2 { font-size: 1.3em; }
+.n8n-chat-widget .chat-message.bot h3 { font-size: 1.2em; }
+.n8n-chat-widget .chat-message.bot h4 { font-size: 1.1em; }
+.n8n-chat-widget .chat-message.bot h5,
+.n8n-chat-widget .chat-message.bot h6 { font-size: 1em; }
+
+.n8n-chat-widget .chat-message.bot p {
+    margin-bottom: 0.75em;
+}
+
+.n8n-chat-widget .chat-message.bot ul,
+.n8n-chat-widget .chat-message.bot ol {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 1.5em;
+}
+
+.n8n-chat-widget .chat-message.bot li {
+    margin-bottom: 0.25em;
+}
+
+.n8n-chat-widget .chat-message.bot a {
+    color: #4F46E5;
+    text-decoration: underline;
+}
+
+.n8n-chat-widget .chat-message.bot code {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.n8n-chat-widget .chat-message.bot pre {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.75em;
+    border-radius: 5px;
+    overflow-x: auto;
+    margin: 0.75em 0;
+}
+
+.n8n-chat-widget .chat-message.bot pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    display: block;
+    white-space: pre;
+}
+
+.n8n-chat-widget .chat-message.bot blockquote {
+    border-left: 3px solid #4F46E5;
+    padding-left: 0.75em;
+    margin-left: 0;
+    margin-right: 0;
+    font-style: italic;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.n8n-chat-widget .chat-message.bot img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin: 0.5em 0;
+}
+
+.n8n-chat-widget .chat-message.bot table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75em 0;
+}
+
+.n8n-chat-widget .chat-message.bot th,
+.n8n-chat-widget .chat-message.bot td {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 0.4em 0.6em;
+    text-align: left;
+}
+
+.n8n-chat-widget .chat-message.bot th {
+    background-color: rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}

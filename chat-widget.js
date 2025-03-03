@@ -4,6 +4,7 @@ import { defaultConfig } from './config.js';
 (function() {
     let currentSessionId = '';
     let isInitialized = false;
+    let isConversationStarted = false;
 
     function loadResources() {
         // Load Inter font
@@ -17,6 +18,11 @@ import { defaultConfig } from './config.js';
         styleLink.rel = 'stylesheet';
         styleLink.href = 'https://cdn.jsdelivr.net/gh/gustavonline/agneai-chatwidget@main/styles.css';
         document.head.appendChild(styleLink);
+        
+        // Load marked.js for markdown parsing
+        const markedScript = document.createElement('script');
+        markedScript.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+        document.head.appendChild(markedScript);
     }
 
     function createChatWidget(config) {
@@ -47,8 +53,32 @@ import { defaultConfig } from './config.js';
         return { chatContainer, toggleButton };
     }
 
+    // Function to safely parse markdown
+    function parseMarkdown(text) {
+        if (typeof marked !== 'undefined') {
+            try {
+                // Configure marked options for safety
+                marked.setOptions({
+                    breaks: true,
+                    sanitize: false,
+                    smartLists: true,
+                    smartypants: true,
+                    xhtml: false
+                });
+                return marked.parse(text);
+            } catch (e) {
+                console.error('Error parsing markdown:', e);
+                return text;
+            }
+        } else {
+            // Fallback if marked is not loaded
+            return text;
+        }
+    }
+
     async function startNewConversation(elements, config) {
         currentSessionId = generateUUID();
+        isConversationStarted = true;
         
         const { messagesContainer, welcomeScreen, initialHeader, chatInterface } = elements;
         messagesContainer.innerHTML = '';
@@ -62,29 +92,32 @@ import { defaultConfig } from './config.js';
         messagesContainer.appendChild(welcomeMessageDiv);
 
         try {
-            const response = await fetch(config.webhook.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Origin': window.location.origin
-                },
-                body: JSON.stringify({
-                    action: "loadPreviousSession",
-                    sessionId: currentSessionId,
-                    route: config.webhook.route,
-                    metadata: { userId: "" }
-                })
-            });
+            // Only make the API call if webhook URL is provided
+            if (config.webhook.url) {
+                const response = await fetch(config.webhook.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({
+                        action: "loadPreviousSession",
+                        sessionId: currentSessionId,
+                        route: config.webhook.route || '',
+                        metadata: { userId: "" }
+                    })
+                });
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const data = await response.json();
-            if (data.output || data.message) {
-                const botMessageDiv = document.createElement('div');
-                botMessageDiv.className = 'chat-message bot';
-                botMessageDiv.innerHTML = data.output || data.message;
-                messagesContainer.appendChild(botMessageDiv);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                if (data.output || data.message) {
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'chat-message bot';
+                    botMessageDiv.innerHTML = parseMarkdown(data.output || data.message);
+                    messagesContainer.appendChild(botMessageDiv);
+                }
             }
         } catch (error) {
             console.error('Error:', error);
@@ -94,7 +127,7 @@ import { defaultConfig } from './config.js';
     }
 
     async function sendMessage(message, elements, config) {
-        if (!message.trim()) return;
+        if (!message.trim() || !isConversationStarted) return;
 
         const { messagesContainer } = elements;
         
@@ -113,31 +146,41 @@ import { defaultConfig } from './config.js';
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
-            const response = await fetch(config.webhook.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Origin': window.location.origin
-                },
-                body: JSON.stringify({
-                    action: "sendMessage",
-                    sessionId: currentSessionId,
-                    route: config.webhook.route,
-                    chatInput: message,
-                    metadata: { userId: "" }
-                })
-            });
+            // Only make the API call if webhook URL is provided
+            if (config.webhook.url) {
+                const response = await fetch(config.webhook.url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    },
+                    body: JSON.stringify({
+                        action: "sendMessage",
+                        sessionId: currentSessionId,
+                        route: config.webhook.route || '',
+                        chatInput: message,
+                        metadata: { userId: "" }
+                    })
+                });
 
-            loadingDiv.remove();
+                loadingDiv.remove();
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const data = await response.json();
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.innerHTML = data.output || data.message || 'I received your message';
-            messagesContainer.appendChild(botMessageDiv);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'chat-message bot';
+                botMessageDiv.innerHTML = parseMarkdown(data.output || data.message || 'I received your message');
+                messagesContainer.appendChild(botMessageDiv);
+            } else {
+                // If no webhook URL, show a fallback message
+                loadingDiv.remove();
+                const fallbackDiv = document.createElement('div');
+                fallbackDiv.className = 'chat-message bot';
+                fallbackDiv.textContent = 'No webhook URL configured. Please set up the webhook to enable chat functionality.';
+                messagesContainer.appendChild(fallbackDiv);
+            }
         } catch (error) {
             console.error('Error:', error);
             loadingDiv.remove();
@@ -174,15 +217,28 @@ import { defaultConfig } from './config.js';
             initialHeader: chatContainer.querySelector('.brand-header'),
         };
 
-        elements.newChatBtn.addEventListener('click', () => startNewConversation(elements, config));
+        // Disable chat input until conversation is started
+        elements.textarea.disabled = true;
+        elements.sendButton.disabled = true;
+
+        elements.newChatBtn.addEventListener('click', () => {
+            startNewConversation(elements, config);
+            // Enable chat input after conversation is started
+            elements.textarea.disabled = false;
+            elements.sendButton.disabled = false;
+        });
+        
         elements.textarea.addEventListener('input', () => autoResizeTextarea(elements.textarea));
         
         elements.sendButton.addEventListener('click', () => {
             const message = elements.textarea.value.trim();
-            if (message) {
+            if (message && isConversationStarted) {
                 sendMessage(message, elements, config);
                 elements.textarea.value = '';
                 elements.textarea.style.height = 'auto';
+            } else if (!isConversationStarted) {
+                // Show a message if user tries to send before starting conversation
+                alert('Please click "Send us a message" to start the conversation first.');
             }
         });
 
@@ -190,10 +246,13 @@ import { defaultConfig } from './config.js';
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 const message = elements.textarea.value.trim();
-                if (message) {
+                if (message && isConversationStarted) {
                     sendMessage(message, elements, config);
                     elements.textarea.value = '';
                     elements.textarea.style.height = 'auto';
+                } else if (!isConversationStarted) {
+                    // Show a message if user tries to send before starting conversation
+                    alert('Please click "Send us a message" to start the conversation first.');
                 }
             }
         });
