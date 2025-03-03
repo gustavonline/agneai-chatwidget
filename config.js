@@ -5,19 +5,20 @@ export const defaultConfig = {
     },
     branding: {
         logo: '',
-        name: '',
-        welcomeText: 'How can we help you today?',
+        name: 'Chat Widget',
+        welcomeText: 'Hello! How can I help you today?',
         responseTimeText: 'We typically reply within a few minutes',
         poweredBy: {
-            text: 'Powered by agne ai',
-            link: 'https://agneai.com'
+            text: 'Powered by Chat Widget',
+            link: '#'
         }
     },
     style: {
-        primaryColor: '#eff6e0',
-        secondaryColor: '#d2ec0b',
-        position: 'right',
+        primaryColor: '#4F46E5',
+        secondaryColor: '#818CF8',
         backgroundColor: '#ffffff',
-        fontColor: '#333333'
-    }
+        fontColor: '#333333',
+        position: 'right'
+    },
+    starterButtons: [] // Add this to ensure the structure exists
 };

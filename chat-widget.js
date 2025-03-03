@@ -39,6 +39,18 @@ import { defaultConfig } from './config.js';
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
         
+        // Create starter buttons HTML first
+        const starterButtonsHTML = config.starterButtons && config.starterButtons.length > 0 
+            ? `<div class="starter-buttons">
+                ${config.starterButtons.map(button => `
+                    <button class="starter-button" data-message="${button.message}">
+                        ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
+                        ${button.text}
+                    </button>
+                `).join('')}
+               </div>`
+            : '';
+    
         chatContainer.innerHTML = `
             <div class="brand-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -49,7 +61,7 @@ import { defaultConfig } from './config.js';
             </div>
             <div class="chat-interface active">
                 <div class="chat-messages"></div>
-                ${config.starterButtons && config.starterButtons.length > 0 ? createStarterButtonsHTML(config.starterButtons) : ''}
+                ${starterButtonsHTML}
                 <div class="chat-input">
                     <textarea placeholder="Type your message here..." rows="1"></textarea>
                     <button type="submit">
@@ -191,15 +203,17 @@ import { defaultConfig } from './config.js';
         try {
             // Only make the API call if webhook URL is provided
             if (config.webhook.url) {
-                // Remove any trailing slashes from the webhook URL
-                const baseUrl = config.webhook.url.replace(/\/+$/, '');
-                
-                const response = await fetch(`${baseUrl}/chat`, {
+                // Use the webhook URL directly without adding /chat
+                const response = await fetch(config.webhook.url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'Origin': window.location.origin
+                        'Origin': window.location.origin,
+                        // Add CORS headers
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type'
                     },
                     body: JSON.stringify({
                         action: "sendMessage",

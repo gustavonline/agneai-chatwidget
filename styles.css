@@ -475,7 +475,9 @@
     flex-direction: column;
     gap: 10px;
     padding: 16px var(--chat--spacing);
-    margin-bottom: 16px;
+    margin: 16px 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .n8n-chat-widget .starter-button {
@@ -493,6 +495,8 @@
     align-items: center;
     gap: 8px;
     width: 100%;
+    margin: 0;
+    outline: none;
 }
 
 .n8n-chat-widget .starter-button:hover {
