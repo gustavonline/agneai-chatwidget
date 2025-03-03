@@ -471,50 +471,56 @@
 /* Add these styles for the starter buttons */
 /* Update the starter buttons styles */
 .n8n-chat-widget .starter-buttons {
-    display: flex !important; /* Force display */
+    display: flex !important;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     padding: 16px var(--chat--spacing);
-    margin: 16px 0;
+    margin: 0;
     width: 100%;
     box-sizing: border-box;
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Only hide starter buttons when conversation has started */
-.n8n-chat-widget .starter-buttons.hidden {
-    display: none !important;
 }
 
 .n8n-chat-widget .starter-button {
-    background-color: var(--chat--message-bot-bg);
+    background-color: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    padding: 12px 16px;
+    border-radius: 8px;
+    padding: 14px 16px;
     text-align: left;
     cursor: pointer;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 13px;
     color: var(--chat--color-font);
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;
     width: 100%;
-    margin: 0;
-    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
 }
 
 .n8n-chat-widget .starter-button:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.n8n-chat-widget .starter-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .n8n-chat-widget .button-icon {
-    font-size: 18px;
+    font-size: 16px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    opacity: 0.8;
+}
+
+/* Hide starter buttons when conversation starts */
+.n8n-chat-widget .starter-buttons.hidden {
+    display: none !important;
 }
