@@ -25,6 +25,7 @@ import { defaultConfig } from './config.js';
         document.head.appendChild(markedScript);
     }
 
+    // Update the createChatWidget function to use the correct class structure
     function createChatWidget(config) {
         const widgetContainer = document.createElement('div');
         widgetContainer.className = 'n8n-chat-widget';
@@ -38,9 +39,9 @@ import { defaultConfig } from './config.js';
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
     
-        // Create starter buttons HTML
+        // Create starter buttons HTML with the correct class structure
         const starterButtonsHTML = config.starterButtons && config.starterButtons.length > 0 
-            ? `<div class="n8n-chat-widget starter-buttons">
+            ? `<div class="starter-buttons">
                 ${config.starterButtons.map(button => `
                     <button class="starter-button" data-message="${button.message}">
                         ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
