@@ -35,12 +35,11 @@ import { defaultConfig } from './config.js';
         widgetContainer.style.setProperty('--n8n-chat-secondary-color', config.style.secondaryColor);
         widgetContainer.style.setProperty('--n8n-chat-background-color', config.style.backgroundColor);
         widgetContainer.style.setProperty('--n8n-chat-font-color', config.style.fontColor);
-
+    
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
         
-        // Create the chat interface HTML with starter buttons
-        let chatHTML = `
+        chatContainer.innerHTML = `
             <div class="brand-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <img src="${config.branding.logo}" alt="${config.branding.name}">
@@ -49,22 +48,8 @@ import { defaultConfig } from './config.js';
                 <button class="close-button">×</button>
             </div>
             <div class="chat-interface active">
-                <div class="chat-messages"></div>`;
-
-        // Add starter buttons if configured
-        if (config.starterButtons && config.starterButtons.length > 0) {
-            chatHTML += '<div class="starter-buttons">';
-            config.starterButtons.forEach(button => {
-                chatHTML += `
-                    <button class="starter-button" data-message="${button.message}">
-                        ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
-                        ${button.text}
-                    </button>`;
-            });
-            chatHTML += '</div>';
-        }
-
-        chatHTML += `
+                <div class="chat-messages"></div>
+                ${config.starterButtons && config.starterButtons.length > 0 ? createStarterButtonsHTML(config.starterButtons) : ''}
                 <div class="chat-input">
                     <textarea placeholder="Type your message here..." rows="1"></textarea>
                     <button type="submit">
@@ -78,38 +63,33 @@ import { defaultConfig } from './config.js';
                 </div>
             </div>
         `;
-
+    
         const toggleButton = document.createElement('button');
         toggleButton.className = `chat-toggle${config.style.position === 'left' ? ' position-left' : ''}`;
         toggleButton.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M12 2C6.477 2 2 6.477 2 12c0 1.821.487 3.53 1.338 5L2.5 21.5l4.5-.838A9.955 9.955 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18c-1.476 0-2.886-.313-4.156-.878l-3.156.586.586-3.156A7.962 7.962 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/>
             </svg>`;
-
+    
         widgetContainer.appendChild(chatContainer);
         widgetContainer.appendChild(toggleButton);
         document.body.appendChild(widgetContainer);
-
+    
         return { chatContainer, toggleButton };
     }
 
-    // New function to create starter buttons
-    function createStarterButtons(config) {
-        if (!config.starterButtons || !config.starterButtons.length) {
-            return '';
-        }
-
-        let buttonsHtml = '<div class="starter-buttons">';
-        config.starterButtons.forEach(button => {
-            buttonsHtml += `
+    // Helper function to create starter buttons HTML
+    function createStarterButtonsHTML(buttons) {
+        let html = '<div class="starter-buttons">';
+        buttons.forEach(button => {
+            html += `
                 <button class="starter-button" data-message="${button.message}">
                     ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
                     ${button.text}
-                </button>
-            `;
+                </button>`;
         });
-        buttonsHtml += '</div>';
-        return buttonsHtml;
+        html += '</div>';
+        return html;
     }
 
     // Function to safely parse markdown
@@ -272,85 +252,111 @@ import { defaultConfig } from './config.js';
             } : defaultConfig;
     
         loadResources();
-        const { chatContainer, toggleButton } = createChatWidget(config);
-    
-        // Wait for DOM to be fully loaded before querying elements
+        
+        // Wait for resources to load before creating the widget
         setTimeout(() => {
-            const elements = {
-                chatInterface: chatContainer.querySelector('.chat-interface'),
-                messagesContainer: chatContainer.querySelector('.chat-messages'),
-                textarea: chatContainer.querySelector('.chat-input textarea'),
-                sendButton: chatContainer.querySelector('.chat-input button[type="submit"]'),
-                initialHeader: chatContainer.querySelector('.brand-header'),
-            };
-    
-            // Verify all elements are found
-            if (!elements.textarea || !elements.sendButton) {
-                console.error('Chat widget elements not found');
-                return;
-            }
-    
-            // Add event listeners
-            elements.textarea.addEventListener('input', () => autoResizeTextarea(elements.textarea));
-            
-            elements.sendButton.addEventListener('click', () => {
-                const message = elements.textarea.value.trim();
-                if (message) {
-                    sendMessage(message, elements, config);
-                    elements.textarea.value = '';
-                    elements.textarea.style.height = 'auto';
+            try {
+                const { chatContainer, toggleButton } = createChatWidget(config);
+                
+                // Make sure elements exist
+                const elements = {
+                    chatInterface: chatContainer.querySelector('.chat-interface'),
+                    messagesContainer: chatContainer.querySelector('.chat-messages'),
+                    textarea: chatContainer.querySelector('textarea'),
+                    sendButton: chatContainer.querySelector('button[type="submit"]'),
+                    initialHeader: chatContainer.querySelector('.brand-header'),
+                };
+                
+                // Debug check
+                console.log('Chat widget elements:', {
+                    chatInterface: !!elements.chatInterface,
+                    messagesContainer: !!elements.messagesContainer,
+                    textarea: !!elements.textarea,
+                    sendButton: !!elements.sendButton,
+                    initialHeader: !!elements.initialHeader
+                });
+                
+                if (!elements.textarea || !elements.sendButton || !elements.messagesContainer) {
+                    console.error('Chat widget: elements not found');
+                    return;
                 }
-            });
-    
-            elements.textarea.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
+                
+                // Setup event listeners
+                elements.textarea.addEventListener('input', () => autoResizeTextarea(elements.textarea));
+                
+                elements.sendButton.addEventListener('click', () => {
                     const message = elements.textarea.value.trim();
                     if (message) {
+                        if (!isConversationStarted) {
+                            startNewConversation(elements, config);
+                        }
                         sendMessage(message, elements, config);
                         elements.textarea.value = '';
                         elements.textarea.style.height = 'auto';
                     }
-                }
-            });
-    
-            // Add starter buttons event listeners if they exist
-            const starterButtons = chatContainer.querySelectorAll('.starter-button');
-            starterButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const message = button.getAttribute('data-message');
-                    if (message) {
-                        sendMessage(message, elements, config);
-                        button.parentElement.style.display = 'none';
+                });
+                
+                elements.textarea.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const message = elements.textarea.value.trim();
+                        if (message) {
+                            if (!isConversationStarted) {
+                                startNewConversation(elements, config);
+                            }
+                            sendMessage(message, elements, config);
+                            elements.textarea.value = '';
+                            elements.textarea.style.height = 'auto';
+                        }
                     }
                 });
-            });
-    
-            toggleButton.addEventListener('click', () => {
-                const isOpen = chatContainer.classList.contains('open');
-                if (isOpen) {
-                    chatContainer.classList.remove('open');
-                    setTimeout(() => chatContainer.style.display = 'none', 300);
-                } else {
-                    chatContainer.style.display = 'flex';
-                    setTimeout(() => {
-                        chatContainer.classList.add('open');
-                        if (!isConversationStarted) {
-                            startNewConversation(elements, config);
+                
+                // Add starter buttons event listeners
+                const starterButtons = chatContainer.querySelectorAll('.starter-button');
+                starterButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const message = button.getAttribute('data-message');
+                        if (message) {
+                            if (!isConversationStarted) {
+                                startNewConversation(elements, config);
+                            }
+                            sendMessage(message, elements, config);
+                            const starterButtonsContainer = button.closest('.starter-buttons');
+                            if (starterButtonsContainer) {
+                                starterButtonsContainer.style.display = 'none';
+                            }
                         }
-                    }, 10);
-                }
-            });
-    
-            const closeButtons = chatContainer.querySelectorAll('.close-button');
-            closeButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    chatContainer.classList.remove('open');
-                    setTimeout(() => chatContainer.style.display = 'none', 300);
+                    });
                 });
-            });
-        }, 100); // Small delay to ensure DOM is ready
+                
+                toggleButton.addEventListener('click', () => {
+                    const isOpen = chatContainer.classList.contains('open');
+                    if (isOpen) {
+                        chatContainer.classList.remove('open');
+                        setTimeout(() => chatContainer.style.display = 'none', 300);
+                    } else {
+                        chatContainer.style.display = 'flex';
+                        setTimeout(() => {
+                            chatContainer.classList.add('open');
+                            if (!isConversationStarted) {
+                                startNewConversation(elements, config);
+                            }
+                        }, 10);
+                    }
+                });
+                
+                const closeButtons = chatContainer.querySelectorAll('.close-button');
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        chatContainer.classList.remove('open');
+                        setTimeout(() => chatContainer.style.display = 'none', 300);
+                    });
+                });
+            } catch (error) {
+                console.error('Error initializing chat widget:', error);
+            }
+        }, 300); // Increased delay to ensure resources are loaded
     }
 
     // Initialize when the script loads
