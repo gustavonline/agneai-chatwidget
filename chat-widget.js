@@ -262,7 +262,7 @@ import { defaultConfig } from './config.js';
     function initChatWidget() {
         if (isInitialized) return;
         isInitialized = true;
-
+    
         const config = window.ChatWidgetConfig ? 
             {
                 webhook: { ...defaultConfig.webhook, ...window.ChatWidgetConfig.webhook },
@@ -270,78 +270,87 @@ import { defaultConfig } from './config.js';
                 style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style },
                 starterButtons: window.ChatWidgetConfig.starterButtons || []
             } : defaultConfig;
-
+    
         loadResources();
         const { chatContainer, toggleButton } = createChatWidget(config);
-
-        const elements = {
-            chatInterface: chatContainer.querySelector('.chat-interface'),
-            messagesContainer: chatContainer.querySelector('.chat-messages'),
-            textarea: chatContainer.querySelector('textarea'),
-            sendButton: chatContainer.querySelector('button[type="submit"]'),
-            initialHeader: chatContainer.querySelector('.brand-header'),
-        };
-
-        // Add event listeners for starter buttons
-        const starterButtons = chatContainer.querySelectorAll('.starter-button');
-        starterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const message = button.getAttribute('data-message');
-                if (message) {
-                    sendMessage(message, elements, config);
-                    // Hide all starter buttons after one is clicked
-                    document.querySelector('.starter-buttons').style.display = 'none';
-                }
-            });
-        });
-        
-        elements.textarea.addEventListener('input', () => autoResizeTextarea(elements.textarea));
-        
-        elements.sendButton.addEventListener('click', () => {
-            const message = elements.textarea.value.trim();
-            if (message) {
-                sendMessage(message, elements, config);
-                elements.textarea.value = '';
-                elements.textarea.style.height = 'auto';
+    
+        // Wait for DOM to be fully loaded before querying elements
+        setTimeout(() => {
+            const elements = {
+                chatInterface: chatContainer.querySelector('.chat-interface'),
+                messagesContainer: chatContainer.querySelector('.chat-messages'),
+                textarea: chatContainer.querySelector('.chat-input textarea'),
+                sendButton: chatContainer.querySelector('.chat-input button[type="submit"]'),
+                initialHeader: chatContainer.querySelector('.brand-header'),
+            };
+    
+            // Verify all elements are found
+            if (!elements.textarea || !elements.sendButton) {
+                console.error('Chat widget elements not found');
+                return;
             }
-        });
-
-        elements.textarea.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+    
+            // Add event listeners
+            elements.textarea.addEventListener('input', () => autoResizeTextarea(elements.textarea));
+            
+            elements.sendButton.addEventListener('click', () => {
                 const message = elements.textarea.value.trim();
                 if (message) {
                     sendMessage(message, elements, config);
                     elements.textarea.value = '';
                     elements.textarea.style.height = 'auto';
                 }
-            }
-        });
-
-        toggleButton.addEventListener('click', () => {
-            const isOpen = chatContainer.classList.contains('open');
-            if (isOpen) {
-                chatContainer.classList.remove('open');
-                setTimeout(() => chatContainer.style.display = 'none', 300);
-            } else {
-                chatContainer.style.display = 'flex';
-                setTimeout(() => chatContainer.classList.add('open'), 10);
-                
-                // Start conversation when chat is opened if not already started
-                if (!isConversationStarted) {
-                    startNewConversation(elements, config);
-                }
-            }
-        });
-
-        const closeButtons = chatContainer.querySelectorAll('.close-button');
-        closeButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                chatContainer.classList.remove('open');
-                setTimeout(() => chatContainer.style.display = 'none', 300);
             });
-        });
+    
+            elements.textarea.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const message = elements.textarea.value.trim();
+                    if (message) {
+                        sendMessage(message, elements, config);
+                        elements.textarea.value = '';
+                        elements.textarea.style.height = 'auto';
+                    }
+                }
+            });
+    
+            // Add starter buttons event listeners if they exist
+            const starterButtons = chatContainer.querySelectorAll('.starter-button');
+            starterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const message = button.getAttribute('data-message');
+                    if (message) {
+                        sendMessage(message, elements, config);
+                        button.parentElement.style.display = 'none';
+                    }
+                });
+            });
+    
+            toggleButton.addEventListener('click', () => {
+                const isOpen = chatContainer.classList.contains('open');
+                if (isOpen) {
+                    chatContainer.classList.remove('open');
+                    setTimeout(() => chatContainer.style.display = 'none', 300);
+                } else {
+                    chatContainer.style.display = 'flex';
+                    setTimeout(() => {
+                        chatContainer.classList.add('open');
+                        if (!isConversationStarted) {
+                            startNewConversation(elements, config);
+                        }
+                    }, 10);
+                }
+            });
+    
+            const closeButtons = chatContainer.querySelectorAll('.close-button');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    chatContainer.classList.remove('open');
+                    setTimeout(() => chatContainer.style.display = 'none', 300);
+                });
+            });
+        }, 100); // Small delay to ensure DOM is ready
     }
 
     // Initialize when the script loads
