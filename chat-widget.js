@@ -39,8 +39,8 @@ import { defaultConfig } from './config.js';
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
         
-        // Modified to directly show chat interface instead of welcome screen
-        chatContainer.innerHTML = `
+        // Create the chat interface HTML with starter buttons
+        let chatHTML = `
             <div class="brand-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <img src="${config.branding.logo}" alt="${config.branding.name}">
@@ -49,8 +49,22 @@ import { defaultConfig } from './config.js';
                 <button class="close-button">×</button>
             </div>
             <div class="chat-interface active">
-                <div class="chat-messages"></div>
-                ${createStarterButtons(config)}
+                <div class="chat-messages"></div>`;
+
+        // Add starter buttons if configured
+        if (config.starterButtons && config.starterButtons.length > 0) {
+            chatHTML += '<div class="starter-buttons">';
+            config.starterButtons.forEach(button => {
+                chatHTML += `
+                    <button class="starter-button" data-message="${button.message}">
+                        ${button.icon ? `<span class="button-icon">${button.icon}</span>` : ''}
+                        ${button.text}
+                    </button>`;
+            });
+            chatHTML += '</div>';
+        }
+
+        chatHTML += `
                 <div class="chat-input">
                     <textarea placeholder="Type your message here..." rows="1"></textarea>
                     <button type="submit">
@@ -176,12 +190,7 @@ import { defaultConfig } from './config.js';
     }
 
     async function sendMessage(message, elements, config) {
-        if (!message.trim()) return;
-
-        // Start conversation if not already started
-        if (!isConversationStarted) {
-            await startNewConversation(elements, config);
-        }
+        if (!message.trim() || !isConversationStarted) return;
 
         const { messagesContainer } = elements;
         
@@ -202,7 +211,10 @@ import { defaultConfig } from './config.js';
         try {
             // Only make the API call if webhook URL is provided
             if (config.webhook.url) {
-                const response = await fetch(config.webhook.url, {
+                // Remove any trailing slashes from the webhook URL
+                const baseUrl = config.webhook.url.replace(/\/+$/, '');
+                
+                const response = await fetch(`${baseUrl}/chat`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

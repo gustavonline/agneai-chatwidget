@@ -469,11 +469,13 @@
     font-weight: 600;
 }
 /* Add these styles for the starter buttons */
+/* Update the starter buttons styles */
 .n8n-chat-widget .starter-buttons {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 0 var(--chat--spacing) 16px;
+    padding: 16px var(--chat--spacing);
+    margin-bottom: 16px;
 }
 
 .n8n-chat-widget .starter-button {
@@ -486,17 +488,22 @@
     font-family: inherit;
     font-size: 14px;
     color: var(--chat--color-font);
-    transition: background-color 0.2s, transform 0.2s;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;
+    width: 100%;
 }
 
 .n8n-chat-widget .starter-button:hover {
     background-color: rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .n8n-chat-widget .button-icon {
     font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
