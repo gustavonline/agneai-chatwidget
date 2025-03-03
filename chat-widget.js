@@ -39,7 +39,7 @@ import { defaultConfig } from './config.js';
         const chatContainer = document.createElement('div');
         chatContainer.className = `chat-container${config.style.position === 'left' ? ' position-left' : ''}`;
         
-        // Create starter buttons HTML first
+        // Create starter buttons HTML first - IMPORTANT: Remove the 'hidden' class here
         const starterButtonsHTML = config.starterButtons && config.starterButtons.length > 0 
             ? `<div class="starter-buttons">
                 ${config.starterButtons.map(button => `
@@ -135,7 +135,7 @@ import { defaultConfig } from './config.js';
         
         const { messagesContainer } = elements;
         
-        // Update how we hide starter buttons
+        // Update how we hide starter buttons - ADD the hidden class when conversation starts
         const starterButtons = document.querySelector('.starter-buttons');
         if (starterButtons) {
             starterButtons.classList.add('hidden');
@@ -279,6 +279,7 @@ import { defaultConfig } from './config.js';
                     textarea: chatContainer.querySelector('textarea'),
                     sendButton: chatContainer.querySelector('button[type="submit"]'),
                     initialHeader: chatContainer.querySelector('.brand-header'),
+                    starterButtons: chatContainer.querySelector('.starter-buttons')
                 };
                 
                 // Debug check

@@ -470,14 +470,20 @@
 }
 /* Add these styles for the starter buttons */
 /* Update the starter buttons styles */
+/* Starter Buttons - Reorganized and improved */
 .n8n-chat-widget .starter-buttons {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 10px var(--chat--spacing);
     margin: 10px 0;
     width: 100%;
     box-sizing: border-box;
+}
+
+/* Only hide when explicitly given the hidden class */
+.n8n-chat-widget .starter-buttons.hidden {
+    display: none !important;
 }
 
 .n8n-chat-widget .starter-button {
